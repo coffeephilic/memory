@@ -1,0 +1,179 @@
+﻿
+<html>
+<head>
+<link rel="shortcut icon" type="image/x-icon" href="/lms/skin/taoyuanLogo.png" />
+<style>
+
+
+h1 {
+  color: white;
+  font-size: 72px;
+  text-align: center;
+}
+
+.container { 
+  width: 200px;
+  height: 200px;
+  position: relative;
+  perspective: 300px;
+  display: inline-block;
+  margin: 5px;
+	cursor: pointer;
+	user-select: none;
+}
+.sideA,
+.sideB {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  transform-style: preserve-3d;
+  transition: transform 1s;
+}
+figure {
+  margin: 0;
+  display: block;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+	-webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+.front {
+  background: #26b79a;
+}
+.back {
+  transform: rotateY( 180deg );
+  border-style: solid;
+  border-width: 4px;
+  border-color: #9a267b;
+}
+.matched .back {
+	border-color: #269ab7;
+	background-color: #BCDDE5;
+	transition: 4s;
+}
+.sideB {
+  transform: rotateY( 180deg );
+}
+
+// .answerContainer {
+	// height: 100%;
+	// display: flex;
+	// align-items: center;
+	// text-align: center;
+// }
+
+figure p {
+  position: relative;
+  color: #50684E;
+  text-align: center;
+  top: 20px;
+  font-family: "Arial", Arial, sans-serif;
+  font-size: 36px;
+}
+figure img {
+  max-width: 200px;
+  max-height: 200px;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+#grid {
+	width:900px;
+	height: 900px;
+	position:absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+}
+</style>
+
+<script>
+	var wordList=[];
+	var active=[];
+</script>
+
+</head>
+
+<body onload="buildPage()">
+
+<div id="grid"></div>
+
+<script>
+	function get(param){
+		var output = (window.location.search.split(param+'=')[1]||'').split('&')[0];
+		output=decodeURIComponent(output);
+		output=output.split('+').join(' ');
+
+		return output;
+	}
+	(function(){
+		for(var i=1; i<9; i++){
+			wordList.push({match:i,word:get("a"+i)});
+			wordList.push({match:i,word:get("b"+i)});
+		}
+	}());
+	function show(index) {
+		document.getElementById(index).className="sideB";
+		for(var i=0; i<active.length; i++) {
+			if (active[i] == wordList[index].match){
+				for (var j=0; j<wordList.length; j++) {
+					if (wordList[j].match == wordList[index].match) {
+						document.getElementById(j).classList.add("matched");
+					}
+				}
+				active.splice(i, 1);
+				return;
+			}
+		}
+		active.push(wordList[index].match);
+		function check() {
+			var checklist=[];
+			for (var i=0; i<active.length; i++) {
+				for (var j=0; j<wordList.length; j++) {
+					if (active[i] == wordList[j].match){
+						checklist.push(j);
+					}
+				}
+			}
+			for (var i=0; i<checklist.length; i++) {
+				hide(checklist[i]);
+			}
+		}
+		if (active.length >= 2) {
+			var t = setTimeout(check, 3000);
+		}
+	}
+	function hide(index) {
+		document.getElementById(index).className="sideA";
+		active.splice(active.indexOf(wordList[index].match), 1);
+	}
+	function buildPage() {
+		wordList.sort(function() {return 0.5 - Math.random()});
+		var grid = "";
+		for(var i=0; i<wordList.length; i++) {
+			j=i+1;
+			let w=wordList[i].word;
+			let check=w.substring(w.length-5).toLowerCase();
+			if(check.substring(1)==".jpg" || check==".jpeg" || check.substring(1)==".png" || check.substring(1)==".svg"){
+				w="<img src='"+w+"'>";
+			}
+			grid += "<section class='container'>"+
+					"<div id='"+i+"' class='sideA'>"+
+						"<figure class='front' onclick='show("+i+")'>"+
+							"<h1>"+j+"</h1>"+
+						"</figure>"+
+						"<figure class='back' onclick='hide("+i+")'>"+
+							"<div class='answerContainer'><p>"+w+"</p></div>"+
+						"</figure>"+
+					"</div>"+
+				"</section>";
+		}
+		document.getElementById("grid").innerHTML=grid;
+	}
+</script>
+
+</body>
+</html>
